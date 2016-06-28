@@ -127,12 +127,14 @@ def parse_pulses(pulse_lengths):
     temp = int(parsed_data[16:32], 2)
     check = int(parsed_data[32:40], 2)
 
-    # verify checksum
-    expected = ((temp & 0xff00) >> 8) + (temp & 0x00ff)
-    expected += ((humid & 0xff00) >> 8) + (humid & 0x00ff)
-    expected = expected % 0xffff
+    # verify checksum, the checksum byte should equal the sum of the other 4 bytes
+    expected = 0
+    for i in range(4):  # loop through first 4 bytes, sum should wrap around at 2^8
+        expected = (expected + int(parsed_data[i * 8 : (i + 1) * 8], 2)) % 2**8
+
     if check != expected:
-        print("Checksum failure: expected {0}, received {1}".format(expected, check))
+        logging.error("Checksum failure: expected {0}, received {1}".format(expected, check))
+        return None
 
     # Read values are 10 larger than actual
     temp *= 0.1
