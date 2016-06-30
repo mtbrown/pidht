@@ -33,7 +33,16 @@ def main():
     print(read(DATA_PIN))
 
 
-def read(pin):
+def read(pin, retries=3):
+    for i in range(retries):
+        reading = try_read(pin)
+        if reading is not None:
+            return reading
+
+    return None
+
+
+def try_read(pin):
     pi = pigpio.pi()
 
     # attatch a callback function that will record all pulse lengths
