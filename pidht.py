@@ -119,16 +119,18 @@ def parse_pulses(pulse_lengths):
         t_high = pulse_lengths.pop(0)
 
         if not within_tolerance(t_low, T_LOW):
-            print("Invalid data waveform, low time of {0} out of tolerance".format(t_low))
+            logging.error("Invalid data waveform, low time of {0} out of tolerance".format(t_low))
+            return None
 
         if within_tolerance(t_high, T_H0):
             parsed_data += "0"
         elif within_tolerance(t_high, T_H1):
             parsed_data += "1"
         else:
-            print("Invalid data waveform, high time of {0} out of tolerance".format(t_high))
+            logging.error("Invalid data waveform, high time of {0} out of tolerance".format(t_high))
+            return None
           
-    logging.debug(parsed_data)
+    logging.debug("Parsed data: " + parsed_data)
     
 
     # use parsed data to calculate temperature, humidity, and checksum
