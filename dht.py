@@ -19,7 +19,7 @@ TIMEOUT = 3 * 100000  # timeout in us
 # See section 7.3 of http://akizukidenshi.com/download/ds/aosong/AM2302.pdf
 # Minimum and maximum timing values in us
 T_RESP = Timing(75, 85)  # Sensor low and high response
-T_LOW = Timing(48, 65)  # Signal low time
+T_LOW = Timing(48, 70)  # Signal low time
 T_H0 = Timing(22, 30)  # Signal high time for 0 bit
 T_H1 = Timing(68, 75)  # Signal high time for 1 bit
 TOLERANCE = 5  # tolerance in us, pigpio claims accuracy of "a few" us
