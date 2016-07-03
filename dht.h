@@ -4,6 +4,6 @@
 #define DATA_BITS 40
 #define NUM_PULSES (2 * DATA_BITS)
 
-int *read_dht(int pin);
+uint32_t *dht_read(int pin);
 
 #endif /* DHT_H */

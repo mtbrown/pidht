@@ -10,7 +10,7 @@
 #define TIMEOUT_COUNT 10000
 
 
-static void set_high_priority() {
+void set_high_priority(void) {
    struct sched_param param;
    param.sched_priority = sched_get_priority_max(SCHED_FIFO);
 
@@ -23,7 +23,7 @@ static void set_high_priority() {
 }
 
 
-int *dht_read(int pin) {
+uint32_t *dht_read(int pin) {
    int i, expected, count;
    uint32_t *pulse_times = calloc(NUM_PULSES, sizeof(uint32_t));
    uint32_t prev_time, cur_time;
@@ -72,6 +72,3 @@ int *dht_read(int pin) {
    return pulse_times;
 }
 
-int main() {
-   dht_read(25);
-}
