@@ -30,7 +30,7 @@ static PyObject *dht_read_wrapper(PyObject *self, PyObject *args) {
 
 
 static PyMethodDef PidhtMethods[] = {
-   {"dht_read", dht_read_wrapper, METH_VARARGS, 
+   {"dht_read", dht_read_wrapper, METH_VARARGS,
       "Read the pulse lengths of a DHT temperature sensor"},
    {NULL, NULL, 0, NULL}
 };
@@ -46,5 +46,6 @@ static struct PyModuleDef pidhtmodule = {
 
 
 PyMODINIT_FUNC PyInit_pidht(void) {
+   dht_init();  // perform one-time initalization
    return PyModule_Create(&pidhtmodule);
 }

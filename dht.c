@@ -24,13 +24,17 @@ void set_high_priority(void) {
 }
 
 
+void dht_init(void) {
+   wiringPiSetupGpio();  // initialize wiringPi library
+}
+
+
 uint32_t *dht_read(int pin) {
    int i, expected, count;
    uint32_t *pulse_times = calloc(NUM_PULSES, sizeof(uint32_t));
    uint32_t prev_time, cur_time;
 
    // Initialize GPIO pin
-   wiringPiSetupGpio();
    pinMode(pin, OUTPUT);
    pullUpDnControl(pin, PUD_UP);
 
@@ -45,7 +49,7 @@ uint32_t *dht_read(int pin) {
    // Monitor pin and record pulse lengths
    prev_time = micros();
    expected = 0;
-   
+
    for (i = 0; i < INIT_PULSES + NUM_PULSES; i++) {
       count = 0;
       while (digitalRead(pin) == expected) {
@@ -71,7 +75,7 @@ int main(int argc, char **argv) {
    uint32_t *pulse_times;
 
    pulse_times = dht_read(25);
-   
+
    for (i = 0; i < NUM_PULSES; i++) {
       printf("%u\n", pulse_times[i]);
    }
