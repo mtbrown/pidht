@@ -7,6 +7,7 @@
 
 #include "dht.h"
 
+#define INIT_PULSES 4
 #define TIMEOUT_COUNT 10000
 
 
@@ -41,17 +42,11 @@ uint32_t *dht_read(int pin) {
    delay(1);  // hold bus low for 1ms
    pinMode(pin, INPUT);  // release bus
 
-   // Ignore initialization pulses
-   while (!digitalRead(pin)) ;
-   while (digitalRead(pin)) ;
-   while (!digitalRead(pin)) ;
-   while (digitalRead(pin)) ;
-
    // Monitor pin and record pulse lengths
    prev_time = micros();
    expected = 0;
    
-   for (i = 0; i < NUM_PULSES; i++) {
+   for (i = 0; i < INIT_PULSES + NUM_PULSES; i++) {
       count = 0;
       while (digitalRead(pin) == expected) {
          count += 1;
@@ -60,15 +55,27 @@ uint32_t *dht_read(int pin) {
          }
       }
       cur_time = micros();
-      pulse_times[i] = cur_time - prev_time;
+      if (i >= INIT_PULSES) {
+         pulse_times[i - INIT_PULSES] = cur_time - prev_time;
+      }
+
       prev_time = cur_time;
       expected = !expected;
-   }
-
-   for (i = 0; i < NUM_PULSES; i++) {
-      printf("%u\n", pulse_times[i]);
    }
 
    return pulse_times;
 }
 
+int main(int argc, char **argv) {
+   int i;
+   uint32_t *pulse_times;
+
+   pulse_times = dht_read(25);
+   
+   for (i = 0; i < NUM_PULSES; i++) {
+      printf("%u\n", pulse_times[i]);
+   }
+   free(pulse_times);
+
+   return 0;
+}

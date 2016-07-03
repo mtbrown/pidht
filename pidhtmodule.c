@@ -19,7 +19,7 @@ static PyObject *dht_read_wrapper(PyObject *self, PyObject *args) {
    pulse_lengths = dht_read(pin);
 
    // build the resulting list into a Python object
-   ret = PyList_New(NUM_PULSES);
+   ret = PyList_New(0);
    for (i = 0; i < NUM_PULSES; i++) {
       PyList_Append(ret, Py_BuildValue("i", pulse_lengths[i]));
    }
