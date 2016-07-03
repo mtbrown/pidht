@@ -1,25 +1,13 @@
 #include <stdio.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/time.h>
-#include <stdint.h>
-#include <inttypes.h>
 #include <sys/mman.h>
 #include <sched.h>
-
+#include <stdlib.h>
+#include <stdint.h>
 #include <wiringPi.h>
 
-#define DATA_BITS 40
-#define NUM_PULSES (2 * DATA_BITS)
+#include "dht.h"
 
 #define TIMEOUT_COUNT 10000
-
-static uint32_t get_time() {
-   struct timeval tv;
-   gettimeofday(&tv, NULL);
-   return tv.tv_sec * (uint32_t) 1000000 + tv.tv_usec;
-}
 
 
 static void set_high_priority() {
@@ -35,9 +23,10 @@ static void set_high_priority() {
 }
 
 
-int dht_read(int pin) {
+int *dht_read(int pin) {
    int i, expected, count;
-   int pulse_counts[NUM_PULSES] = {0};
+   uint32_t *pulse_times = calloc(NUM_PULSES, sizeof(uint32_t));
+   uint32_t prev_time, cur_time;
 
    // Initialize GPIO pin
    wiringPiSetupGpio();
@@ -59,7 +48,9 @@ int dht_read(int pin) {
    while (digitalRead(pin)) ;
 
    // Monitor pin and record pulse lengths
+   prev_time = micros();
    expected = 0;
+   
    for (i = 0; i < NUM_PULSES; i++) {
       count = 0;
       while (digitalRead(pin) == expected) {
@@ -68,17 +59,18 @@ int dht_read(int pin) {
             break;
          }
       }
-      pulse_counts[i] = count;
+      cur_time = micros();
+      pulse_times[i] = cur_time - prev_time;
+      prev_time = cur_time;
       expected = !expected;
    }
 
    for (i = 0; i < NUM_PULSES; i++) {
-      printf("%d\n", pulse_counts[i]);
+      printf("%u\n", pulse_times[i]);
    }
 
-   return 0;
+   return pulse_times;
 }
-
 
 int main() {
    dht_read(25);
