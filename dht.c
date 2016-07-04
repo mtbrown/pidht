@@ -24,6 +24,19 @@ void set_high_priority(void) {
 }
 
 
+void set_low_priority(void) {
+   struct sched_param param;
+   param.sched_priority = sched_get_priority_min(SCHED_FIFO);
+
+   if (sched_setscheduler(0, SCHED_FIFO, &param) < 0) {
+      perror("sched_setscheduler");
+   }
+   if (munlockall() < 0) {
+      perror("munlockall");
+   }
+}
+
+
 void dht_init(void) {
    wiringPiSetupGpio();  // initialize wiringPi library
 }
@@ -34,27 +47,25 @@ uint32_t *dht_read(int pin) {
    uint32_t *pulse_times = calloc(NUM_PULSES, sizeof(uint32_t));
    uint32_t prev_time, cur_time;
 
-   // Initialize GPIO pin
-   pinMode(pin, OUTPUT);
-   pullUpDnControl(pin, PUD_UP);
+   prev_time = micros();
+   expected = 0;
 
    // The following is timing critical
    set_high_priority();
 
    // Activate sensor
+   pinMode(pin, OUTPUT);
+   pullUpDnControl(pin, PUD_UP);
    digitalWrite(pin, 0);
    delay(1);  // hold bus low for 1ms
    pinMode(pin, INPUT);  // release bus
 
-   // Monitor pin and record pulse lengths
-   prev_time = micros();
-   expected = 0;
-
+   // Monitor pin and record pulse lengths sent by sensor
    for (i = 0; i < INIT_PULSES + NUM_PULSES; i++) {
       count = 0;
       while (digitalRead(pin) == expected) {
          count += 1;
-         if (count > TIMEOUT_COUNT) {
+         if (count >= TIMEOUT_COUNT) {
             break;
          }
       }
@@ -67,13 +78,18 @@ uint32_t *dht_read(int pin) {
       expected = !expected;
    }
 
+   // End of timing critical section
+   set_low_priority();
+
    return pulse_times;
 }
+
 
 int main(int argc, char **argv) {
    int i;
    uint32_t *pulse_times;
 
+   dht_init();
    pulse_times = dht_read(25);
 
    for (i = 0; i < NUM_PULSES; i++) {
