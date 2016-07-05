@@ -16,7 +16,7 @@ def read(pin, retries=5):
         if reading is None:
             logging.debug("Invalid DHT sensor response")
             if retries:
-                time.sleep(0.1)
+                time.sleep(0.5)
         else:
             logging.debug("Successfully read DHT sensor")
             return reading

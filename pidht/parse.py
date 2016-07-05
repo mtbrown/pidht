@@ -15,9 +15,9 @@ EXPECTED_PULSES = 2 * DATA_BITS  # low then high pulse expected for each bit
 # Timing tolerances for the single-bus communication
 # See section 7.3 of http://akizukidenshi.com/download/ds/aosong/AM2302.pdf
 # Minimum and maximum timing values in us
-T_LOW = Timing(48, 70)  # Signal low time
-T_H0 = Timing(22, 30)  # Signal high time for 0 bit
-T_H1 = Timing(68, 75)  # Signal high time for 1 bit
+T_LOW = Timing(40, 70)  # Signal low time
+T_H0 = Timing(20, 40)  # Signal high time for 0 bit
+T_H1 = Timing(60, 80)  # Signal high time for 1 bit
 
 
 def within_tolerance(pulse, timing):
