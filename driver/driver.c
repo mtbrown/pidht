@@ -38,14 +38,14 @@ static PyMethodDef PidhtMethods[] = {
 
 static struct PyModuleDef pidhtmodule = {
    PyModuleDef_HEAD_INIT,
-   "pidht",  // module name
+   "driver",  // module name
    NULL,  // module documentation
    -1,  // no module state
    PidhtMethods
 };
 
 
-PyMODINIT_FUNC PyInit_pidht(void) {
+PyMODINIT_FUNC PyInit_driver(void) {
    dht_init();  // perform one-time initalization
    return PyModule_Create(&pidhtmodule);
 }
