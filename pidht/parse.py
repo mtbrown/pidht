@@ -28,34 +28,15 @@ T_H0 = Timing(20, 40)  # Signal high time for 0 bit
 T_H1 = Timing(60, 80)  # Signal high time for 1 bit
 
 
-def within_tolerance(pulse, timing, tolerance=0):
-    """
-    Determines if the pulse width in us falls within the specified tolerance
-    of the timing definition.
-    :param pulse: The pulse width in us to analyze
-    :param timing: The timing definition the pulse should be within
-    :param tolerance: The tolerance in us that is acceptable for the pulse to be outside
-    of both ends of the timing definition. Defaults to 0, i.e. the pulse width must be within
-    or equal to either end of the timing definition.
-    :return: True if the pulse width is within tolerance, else False
-    """
-    return timing.min - tolerance <= pulse <= timing.max + tolerance
-
-
-def verify_checksum(parsed_data):
-    # the checksum byte should equal the sum of the first 4 bytes
-    expected = 0
-    for i in range(4):  # loop through first 4 bytes, sum should wrap around at 2^8
-        expected = (expected + int(parsed_data[i * 8 : (i + 1) * 8], 2)) % 2**8
-
-    check = int(parsed_data[32:40], 2)  # last byte of data contains checksum
-    if check != expected:
-        logging.debug("Checksum failure: expected {0}, received {1}".format(expected, check))
-
-    return check == expected
-
-
 def parse_pulses(pulse_lengths):
+    """
+    Accepts a list of pulse lengths read from the sensor and returns a reading containing
+    the parsed. If any of the pulse lengths are out of tolerance or there is a checksum failure,
+    None is returned.
+    :param pulse_lengths: A list of integer pulse lengths read from the sensor.
+    :return: A Reading containing the temperature and humidity parsed from the pulse lengths.
+    If the pulse lengths are invalid, None is returned.
+    """
     # every data bit is represented by a low pulse followed by high
     # the duration of the high pulse determines the value of the bit
     parsed_data = ""
@@ -81,6 +62,7 @@ def parse_pulses(pulse_lengths):
     logging.debug("Parsed data: " + parsed_data)
 
     if not verify_checksum(parsed_data):
+        logging.debug("Checksum failure")
         return None
 
     # use parsed data to calculate temperature, humidity, and checksum
@@ -94,3 +76,33 @@ def parse_pulses(pulse_lengths):
 
     reading = Reading(temp, temp_f, humid)
     return reading
+
+
+def within_tolerance(pulse, timing, tolerance=0):
+    """
+    Determines if the pulse width in us falls within the specified tolerance
+    of the timing definition.
+    :param pulse: The pulse width in us to analyze
+    :param timing: The timing definition the pulse should be within
+    :param tolerance: The tolerance in us that is acceptable for the pulse to be outside
+    of both ends of the timing definition. Defaults to 0, i.e. the pulse width must be within
+    or equal to either end of the timing definition.
+    :return: True if the pulse width is within tolerance, else False
+    """
+    return timing.min - tolerance <= pulse <= timing.max + tolerance
+
+
+def verify_checksum(parsed_data):
+    """
+    Validates the string of bits using the checksum byte.
+    :param parsed_data: A string of 40 bits read from the sensor.
+    :return: True if the checksum matches, else False
+    """
+    # the checksum byte should equal the sum of the first 4 bytes
+    expected = 0
+    for i in range(4):  # loop through first 4 bytes, sum should wrap around at 2^8
+        expected = (expected + int(parsed_data[i * 8: (i + 1) * 8], 2)) % 2 ** 8
+
+    check = int(parsed_data[32:40], 2)  # last byte of data contains checksum
+
+    return check == expected
