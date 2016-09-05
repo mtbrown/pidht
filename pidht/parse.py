@@ -1,8 +1,16 @@
+"""
+The response from the DHT22 sensor is a series of pulses of varying lengths.
+The driver will return a list of integers representing the lengths of the pulses
+in us. These pulse widths are then compared to various timing tolerances defined below
+to determine the actual temperature and humidity values measured by the sensor.
+
+For more information, refer to http://akizukidenshi.com/download/ds/aosong/AM2302.pdf
+"""
 from collections import namedtuple
 import logging
 
-# Datatype definitions
-Timing = namedtuple('Timing', ['min', 'max'])
+# Data type definitions
+Timing = namedtuple('Timing', ['min', 'max'])  # represents a pulse-width range
 Reading = namedtuple('Reading', ['temp', 'temp_f', 'humid'])
 
 # Configuration
@@ -12,7 +20,7 @@ TOLERANCE = 5  # tolerance in us
 DATA_BITS = 40  # number of bits of data provided by sensor
 EXPECTED_PULSES = 2 * DATA_BITS  # low then high pulse expected for each bit
 
-# Timing tolerances for the single-bus communication
+# Timing tolerances for the single-bus communication protocol
 # See section 7.3 of http://akizukidenshi.com/download/ds/aosong/AM2302.pdf
 # Minimum and maximum timing values in us
 T_LOW = Timing(40, 70)  # Signal low time
@@ -20,8 +28,18 @@ T_H0 = Timing(20, 40)  # Signal high time for 0 bit
 T_H1 = Timing(60, 80)  # Signal high time for 1 bit
 
 
-def within_tolerance(pulse, timing):
-    return timing.min - TOLERANCE <= pulse <= timing.max + TOLERANCE
+def within_tolerance(pulse, timing, tolerance=0):
+    """
+    Determines if the pulse width in us falls within the specified tolerance
+    of the timing definition.
+    :param pulse: The pulse width in us to analyze
+    :param timing: The timing definition the pulse should be within
+    :param tolerance: The tolerance in us that is acceptable for the pulse to be outside
+    of both ends of the timing definition. Defaults to 0, i.e. the pulse width must be within
+    or equal to either end of the timing definition.
+    :return: True if the pulse width is within tolerance, else False
+    """
+    return timing.min - tolerance <= pulse <= timing.max + tolerance
 
 
 def verify_checksum(parsed_data):
