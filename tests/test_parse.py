@@ -59,3 +59,39 @@ def test_parse_pulses_negative_temp():
     assert abs(reading.temp - -10.1) < 0.1
     assert abs(reading.humid - 65.8) < 0.1
     assert abs(reading.temp_f - 13.82) < 0.01
+
+
+def test_parse_pulses_invalid_checksum():
+    pulses = generate_pulses("0000001010010010" + "1000100001100101" + "01111001")
+    assert parse_pulses(pulses) is None
+
+
+def test_parse_pulses_low_out_of_range():
+    pulses = [46, 35, 45, 26, 54, 35, 50, 30, 54, 26, 55, 27, 54, 75, 52, 33, 47, 75, 53,
+              34, 55, 27, 47, 73, 46, 31, 53, 26, 52, 65, 51, 26, 51, 32, 47, 34, 54, 25,
+              54, 35, 53, 35, 53, 34, 52, 31, 49, 75, 52, 25, 51, 28, 49, 27, 53, 28, 52,
+              70, 46, 65, 48, 30, 55, 66, 50, 69, 46, 33, 55, 71, 50, 35, 53, 25, 47, 34,
+              45, 73, 55, 29]
+
+    pulses[0] = T_LOW.min - 5
+    assert parse_pulses(pulses, tolerance=0) is None
+    pulses[0] = T_LOW.max + 5
+    assert parse_pulses(pulses, tolerance=0) is None
+
+
+def test_parse_pulses_high_out_of_range():
+    pulses = [46, 35, 45, 26, 54, 35, 50, 30, 54, 26, 55, 27, 54, 75, 52, 33, 47, 75, 53,
+              34, 55, 27, 47, 73, 46, 31, 53, 26, 52, 65, 51, 26, 51, 32, 47, 34, 54, 25,
+              54, 35, 53, 35, 53, 34, 52, 31, 49, 75, 52, 25, 51, 28, 49, 27, 53, 28, 52,
+              70, 46, 65, 48, 30, 55, 66, 50, 69, 46, 33, 55, 71, 50, 35, 53, 25, 47, 34,
+              45, 73, 55, 29]
+
+    pulses[1] = T_H0.min - 5
+    assert parse_pulses(pulses, tolerance=0) is None
+    pulses[1] = T_H1.max + 5
+    assert parse_pulses(pulses, tolerance=0) is None
+    pulses[0] = 46  # reset original valid value
+
+    # Set an arbitrary high pulse in the indeterminate range between T_H0 and T_H1
+    pulses[21] = (T_H0.max + T_H1.min) // 2
+    assert parse_pulses(pulses, tolerance=0) is None
