@@ -14,9 +14,6 @@ import logging
 Timing = namedtuple('Timing', ['min', 'max'])  # represents a pulse-width range
 Reading = namedtuple('Reading', ['temp', 'temp_f', 'humid'])
 
-# Configuration
-TOLERANCE = 5  # tolerance in us
-
 # Expected quantities and times/tolerances
 DATA_BITS = 40  # number of bits of data provided by sensor
 EXPECTED_PULSES = 2 * DATA_BITS  # low then high pulse expected for each bit
@@ -29,12 +26,13 @@ T_H0 = Timing(20, 40)  # Signal high time for 0 bit
 T_H1 = Timing(60, 80)  # Signal high time for 1 bit
 
 
-def parse_pulses(pulse_lengths):
+def parse_pulses(pulse_lengths, tolerance=0):
     """
     Accepts a list of pulse lengths read from the sensor and returns a reading containing
     the parsed. If any of the pulse lengths are out of tolerance or there is a checksum failure,
     None is returned.
     :param pulse_lengths: A list of integer pulse lengths read from the sensor.
+    :param tolerance: Allowable tolerance in us when comparing pulse widths.
     :return: A Reading containing the temperature and humidity parsed from the pulse lengths.
     If the pulse lengths are invalid, None is returned.
     """
@@ -52,9 +50,9 @@ def parse_pulses(pulse_lengths):
             logging.debug("Invalid data waveform, low time of {0} us out of tolerance".format(t_low))
             return None
 
-        if within_tolerance(t_high, T_H0):
+        if within_tolerance(t_high, T_H0, tolerance=tolerance):
             parsed_data += "0"
-        elif within_tolerance(t_high, T_H1):
+        elif within_tolerance(t_high, T_H1, tolerance=tolerance):
             parsed_data += "1"
         else:
             logging.debug("Invalid data waveform, high time of {0} us out of tolerance".format(t_high))
