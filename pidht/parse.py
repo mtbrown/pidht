@@ -67,7 +67,8 @@ def parse_pulses(pulse_lengths):
 
     # use parsed data to calculate temperature, humidity, and checksum
     humid = int(parsed_data[0:16], 2)
-    temp = int(parsed_data[16:32], 2)
+    temp = int(parsed_data[17:32], 2)
+    temp *= (-1 if int(parsed_data[16]) else 1)  # 16th bit represents sign of temperature
 
     # Read values are 10 larger than actual
     temp *= 0.1
