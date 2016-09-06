@@ -6,6 +6,7 @@ to determine the actual temperature and humidity values measured by the sensor.
 
 For more information, refer to http://akizukidenshi.com/download/ds/aosong/AM2302.pdf
 """
+from __future__ import division
 from collections import namedtuple
 import logging
 
