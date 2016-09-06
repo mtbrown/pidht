@@ -38,7 +38,7 @@ void set_low_priority(void) {
 
 
 void dht_init(void) {
-   wiringPiSetupGpio();  // initialize wiringPi library
+   wiringPiSetup();  // initialize wiringPi library
 }
 
 
