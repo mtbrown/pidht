@@ -83,19 +83,3 @@ uint32_t *dht_read(int pin) {
 
    return pulse_times;
 }
-
-
-int main(int argc, char **argv) {
-   int i;
-   uint32_t *pulse_times;
-
-   dht_init();
-   pulse_times = dht_read(25);
-
-   for (i = 0; i < NUM_PULSES; i++) {
-      printf("%u\n", pulse_times[i]);
-   }
-   free(pulse_times);
-
-   return 0;
-}

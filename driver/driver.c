@@ -46,6 +46,6 @@ static struct PyModuleDef pidhtmodule = {
 
 
 PyMODINIT_FUNC PyInit_driver(void) {
-   dht_init();  // perform one-time initalization
+   dht_init();  // perform one-time initialization
    return PyModule_Create(&pidhtmodule);
 }
